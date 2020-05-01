@@ -27,9 +27,8 @@ void update_pixel(int x, int y, uint8 map[HEIGHT][WIDTH], uint8 next[HEIGHT][WID
   switch (v) {
     case Type_Sand:
       {
-        next[y][x] = v;
+        next[y][x] = Type_None;
 
-        printf("hi %d\n", y);
         next[y + 1][x] = Type_Sand;
       } break;
     case Type_Rock:
@@ -40,10 +39,6 @@ void update_pixel(int x, int y, uint8 map[HEIGHT][WIDTH], uint8 next[HEIGHT][WID
         } else {
           next[y][x] = Type_None;
         }
-      } break;
-    default:
-      {
-        next[y][x] = v;
       } break;
   }
 }
@@ -112,13 +107,14 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    if (i % 10 == 0) {
+    if (i % 2 == 0) {
       for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
           update_pixel(x, y, map, next);
         }
       }
 
+      // TODO(harrison): do a memcpy here
       for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
           map[y][x] = next[y][x];
