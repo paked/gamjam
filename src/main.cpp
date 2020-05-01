@@ -15,37 +15,66 @@ typedef double    real64;
 #define WIDTH 900
 #define HEIGHT 800
 
-enum {
+enum Type : uint8 {
   Type_None,
   Type_Sand,
   Type_Rock,
+  Type_Bedrock,
 };
 
-void update_pixel(int x, int y, uint8 map[HEIGHT][WIDTH], uint8 next[HEIGHT][WIDTH]) {
-  int v = map[y][x];
+Type get(Type map[HEIGHT][WIDTH], int x, int y) {
+  if (x < 0 || y < 0 || x == HEIGHT || y == HEIGHT) {
+    return Type_Bedrock;
+  }
+
+  return map[y][x];
+}
+
+void set(Type map[HEIGHT][WIDTH], int x, int y, Type v) {
+  if (x < 0 || y < 0 || x == HEIGHT || y == HEIGHT) {
+    return;
+  }
+
+  map[y][x] = v;
+}
+
+bool solid(Type t) {
+  return t == Type_Bedrock || t == Type_Rock | t == Type_Sand;
+}
+
+void update_pixel(int x, int y, Type map[HEIGHT][WIDTH], Type next[HEIGHT][WIDTH]) {
+  Type v = map[y][x];
 
   switch (v) {
     case Type_Sand:
       {
-        next[y][x] = Type_None;
+        if (solid(get(map, x, y + 1))) {
+          if (!solid(get(map, x - 1, y + 1))) {
+            set(next, x, y, Type_None);
+            x -= 1;
+            y += 1;
+          } else if (!solid(get(map, x + 1, y + 1))) {
+            set(next, x, y, Type_None);
+            x += 1;
+            y += 1;
+          }
 
-        next[y + 1][x] = Type_Sand;
+          set(next, x, y, Type_Sand);
+        } else {
+          set(next, x, y, Type_None);
+          set(next, x, y + 1, Type_Sand);
+        }
       } break;
     case Type_Rock:
       {
-        float r = (float)rand()/(float)(RAND_MAX/1);
-        if (r > 0.05) {
-          next[y][x] = v;
-        } else {
-          next[y][x] = Type_None;
-        }
+          set(next, x, y, v);
       } break;
   }
 }
 
 int main(int argc, char* argv[]) {
-  uint8 map[HEIGHT][WIDTH] = {};
-  uint8 next[HEIGHT][WIDTH] = {};
+  Type map[HEIGHT][WIDTH] = {};
+  Type next[HEIGHT][WIDTH] = {};
 
   SDL_Window *window;                    // Declare a pointer
   SDL_Renderer *renderer;
@@ -77,7 +106,11 @@ int main(int argc, char* argv[]) {
 
   for (int y = 0; y < HEIGHT; y++) {
     for (int x = 0; x < WIDTH; x++) {
-      uint8 v = Type_None;
+      Type v = Type_None;
+
+      if (y == HEIGHT- 1) {
+        v = Type_Rock;
+      }
 
       if (y == 0 && x % 10 == 0) {
         v = Type_Sand;
@@ -96,9 +129,7 @@ int main(int argc, char* argv[]) {
 
   bool done = false;
 
-  int i = 0;
   while (!done) {
-    i ++;
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
@@ -107,18 +138,24 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    if (i % 2 == 0) {
-      for (int y = 0; y < HEIGHT; y++) {
-        for (int x = 0; x < WIDTH; x++) {
-          update_pixel(x, y, map, next);
-        }
+    /*
+    for (int x = 0; x < WIDTH; x++) {
+      if (x % 10 == 0) {
+        set(map, x, 0, Type_Sand);
       }
+    }*/
+    set(map, WIDTH/2, HEIGHT-100, Type_Sand);
 
-      // TODO(harrison): do a memcpy here
-      for (int y = 0; y < HEIGHT; y++) {
-        for (int x = 0; x < WIDTH; x++) {
-          map[y][x] = next[y][x];
-        }
+    for (int y = 0; y < HEIGHT; y++) {
+      for (int x = 0; x < WIDTH; x++) {
+        update_pixel(x, y, map, next);
+      }
+    }
+
+    // TODO(harrison): do a memcpy here
+    for (int y = 0; y < HEIGHT; y++) {
+      for (int x = 0; x < WIDTH; x++) {
+        map[y][x] = next[y][x];
       }
     }
 
@@ -144,6 +181,8 @@ int main(int argc, char* argv[]) {
             {
               color = 0x00FF00FF;
             } break;
+          default:
+            {} break;
         }
 
         pixels[y * (pitch/4) + x] = color;
