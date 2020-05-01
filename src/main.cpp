@@ -2,14 +2,14 @@
 #include <stdio.h>
 
 int main(int argc, char* argv[]) {
-
     SDL_Window *window;                    // Declare a pointer
+    SDL_Renderer *renderer;
 
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
-        "An SDL2 window",                  // window title
+        "gamjam",                          // window title
         SDL_WINDOWPOS_UNDEFINED,           // initial x position
         SDL_WINDOWPOS_UNDEFINED,           // initial y position
         640,                               // width, in pixels
@@ -24,15 +24,31 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // The window is open: could enter program loop here (see SDL_PollEvent())
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    SDL_Delay(3000);  // Pause execution for 3000 milliseconds, for example
+    // The window is open: could enter program loop here (see SDL_PollEvent())
+  
+    bool done = false;
+
+    while (!done) {
+      SDL_Event event;
+
+      while (SDL_PollEvent(&event)) {
+        if(event.type == SDL_QUIT) {
+          done = true;
+        }
+      }
+
+      SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+      SDL_RenderClear(renderer);
+      SDL_RenderPresent(renderer);
+    }
 
     // Close and destroy the window
     SDL_DestroyWindow(window);
 
     // Clean up
     SDL_Quit();
+
     return 0;
 }
-
