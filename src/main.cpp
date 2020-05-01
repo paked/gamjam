@@ -21,8 +21,36 @@ enum {
   Type_Rock,
 };
 
+void update_pixel(int x, int y, uint8 map[HEIGHT][WIDTH], uint8 next[HEIGHT][WIDTH]) {
+  int v = map[y][x];
+
+  switch (v) {
+    case Type_Sand:
+      {
+        next[y][x] = v;
+
+        printf("hi %d\n", y);
+        next[y + 1][x] = Type_Sand;
+      } break;
+    case Type_Rock:
+      {
+        float r = (float)rand()/(float)(RAND_MAX/1);
+        if (r > 0.05) {
+          next[y][x] = v;
+        } else {
+          next[y][x] = Type_None;
+        }
+      } break;
+    default:
+      {
+        next[y][x] = v;
+      } break;
+  }
+}
+
 int main(int argc, char* argv[]) {
   uint8 map[HEIGHT][WIDTH] = {};
+  uint8 next[HEIGHT][WIDTH] = {};
 
   SDL_Window *window;                    // Declare a pointer
   SDL_Renderer *renderer;
@@ -48,7 +76,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
   texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 
@@ -56,7 +84,7 @@ int main(int argc, char* argv[]) {
     for (int x = 0; x < WIDTH; x++) {
       uint8 v = Type_None;
 
-      if (x % 10 == 0) {
+      if (y == 0 && x % 10 == 0) {
         v = Type_Sand;
       }
 
@@ -73,12 +101,28 @@ int main(int argc, char* argv[]) {
 
   bool done = false;
 
+  int i = 0;
   while (!done) {
+    i ++;
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
       if(event.type == SDL_QUIT) {
         done = true;
+      }
+    }
+
+    if (i % 10 == 0) {
+      for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+          update_pixel(x, y, map, next);
+        }
+      }
+
+      for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+          map[y][x] = next[y][x];
+        }
       }
     }
 
