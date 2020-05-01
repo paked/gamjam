@@ -16,7 +16,8 @@ FILES=$PROJECT_DIR/src/main.cpp
 mkdir -p build
 
 pushd build
-gcc -o gamjam -Wall -Werror -std=c++11 "$FILES" $(sdl2-config --cflags --libs)
+
+gcc -o gamjam -Wall -std=c++11 "$FILES" $(sdl2-config --cflags --libs)
 
 compileCheckError
 
