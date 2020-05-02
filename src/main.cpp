@@ -157,10 +157,16 @@ int main(int argc, char* argv[]) {
     for (int y = 0; y < HEIGHT; y++) {
       for (int x = 0; x < WIDTH; x++) {
         update_pixel(x, y, map, next);
+
+        if ((mouseX-x)*(mouseX-x) + (mouseY-y)*(mouseY-y) < 81) {
+          if (buttonState == 1) {
+            set(map, x, y, Type_Sand);
+          } 
+        }
       }
     }
 
-    
+    memcpy(map, next, sizeof(next));
 
     uint32* pixels;
     int pitch;
@@ -192,23 +198,12 @@ int main(int argc, char* argv[]) {
           if ((mouseX-x)*(mouseX-x) + (mouseY-y)*(mouseY-y) > 64) {
             color = 0xFFFFFFFF;
           }
-          if (buttonState == 1) {
-            set(map, x, y, Type_Sand);
-          } 
         } 
-
         
         pixels[y * (pitch/4) + x] = color;
       }
     }
 
-    // TODO(harrison): do a memcpy here
-    for (int y = 0; y < HEIGHT; y++) {
-      for (int x = 0; x < WIDTH; x++) {
-        map[y][x] = next[y][x];
-      }
-    }
-    
 
     SDL_UnlockTexture(texture);
 
