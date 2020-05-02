@@ -128,6 +128,10 @@ int main(int argc, char* argv[]) {
   }
 
   bool done = false;
+  
+
+  int mouseX, mouseY;
+  uint32 buttonState;
 
   while (!done) {
     SDL_Event event;
@@ -136,6 +140,10 @@ int main(int argc, char* argv[]) {
       if(event.type == SDL_QUIT) {
         done = true;
       }
+
+      buttonState = SDL_GetMouseState(&mouseX, &mouseY); 
+      printf("%i, %i, %i\n", mouseX, mouseY, buttonState);  
+      
     }
 
     /*
@@ -152,12 +160,7 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    // TODO(harrison): do a memcpy here
-    for (int y = 0; y < HEIGHT; y++) {
-      for (int x = 0; x < WIDTH; x++) {
-        map[y][x] = next[y][x];
-      }
-    }
+    
 
     uint32* pixels;
     int pitch;
@@ -184,10 +187,28 @@ int main(int argc, char* argv[]) {
           default:
             {} break;
         }
+         
+        if ((mouseX-x)*(mouseX-x) + (mouseY-y)*(mouseY-y) < 81) {
+          if ((mouseX-x)*(mouseX-x) + (mouseY-y)*(mouseY-y) > 64) {
+            color = 0xFFFFFFFF;
+          }
+          if (buttonState == 1) {
+            set(map, x, y, Type_Sand);
+          } 
+        } 
 
+        
         pixels[y * (pitch/4) + x] = color;
       }
     }
+
+    // TODO(harrison): do a memcpy here
+    for (int y = 0; y < HEIGHT; y++) {
+      for (int x = 0; x < WIDTH; x++) {
+        map[y][x] = next[y][x];
+      }
+    }
+    
 
     SDL_UnlockTexture(texture);
 
